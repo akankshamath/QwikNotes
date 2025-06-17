@@ -48,8 +48,7 @@ export async function updateSession(request: NextRequest) {
         data: { user },
       } = await supabase.auth.getUser();
       if (user) {
-        return NextResponse.redirect(new URL("/", process.env.NEXT_PUBLIC_BASE_URL),
-      );
+        return NextResponse.redirect(new URL("/", process.env.NEXT_PUBLIC_BASE_URL));
       }
     }
 
@@ -79,23 +78,21 @@ export async function updateSession(request: NextRequest) {
         );
         
         let noteId: string | null = null;
-        
+
         try {
           const json = await res.json();
           noteId = json?.noteId;
         } catch (e) {
           console.error("Failed to parse note creation response", e);
         }
-        
+
         if (noteId) {
           const url = request.nextUrl.clone();
           url.searchParams.set("noteId", noteId);
           return NextResponse.redirect(url);
+        } else {
+          console.error("noteId is null - could not redirect");
         }
-        
-        const url = request.nextUrl.clone();
-        url.searchParams.set("noteId", noteId);
-        return NextResponse.redirect(url);
       }
     }
 }
