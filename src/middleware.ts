@@ -42,7 +42,13 @@ export async function updateSession(request: NextRequest) {
   try {
     const {
       data: { user },
+      error,
     } = await supabase.auth.getUser();
+    
+    if (error || !user) {
+      return supabaseResponse;
+    }
+    
 
     if (isAuthRoute && user) {
       return NextResponse.redirect(
