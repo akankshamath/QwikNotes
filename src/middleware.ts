@@ -12,9 +12,7 @@ export const config = {
 };
 
 export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  });
+  let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
     process.env.SUPABASE_URL!,
@@ -28,9 +26,7 @@ export async function updateSession(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value),
           );
-          supabaseResponse = NextResponse.next({
-            request,
-          });
+          supabaseResponse = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options),
           );
@@ -43,48 +39,62 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname === "/login" ||
     request.nextUrl.pathname === "/sign-up";
 
-  if (isAuthRoute) {
+  try {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (user) {
+
+    if (isAuthRoute && user) {
       return NextResponse.redirect(
         new URL("/", process.env.NEXT_PUBLIC_BASE_URL),
       );
     }
-  }
 
-  const { searchParams, pathname } = new URL(request.url);
+    const { searchParams, pathname } = new URL(request.url);
 
-  if (!searchParams.get("noteId") && pathname === "/") {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    if (!searchParams.get("noteId") && pathname === "/" && user) {
+      // Try fetching newest note
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/fetch-newest-note?userId=${user.id}`
+        );
+        const json = await res.json();
+        const newestNoteId = json?.newestNoteId;
 
-    if (user) {
-      const { newestNoteId } = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/fetch-newest-note?userId=${user.id}`,
-      ).then((res) => res.json());
+        if (newestNoteId) {
+          const url = request.nextUrl.clone();
+          url.searchParams.set("noteId", newestNoteId);
+          return NextResponse.redirect(url);
+        }
+      } catch (err) {
+        console.error("Failed to fetch newest note:", err);
+      }
 
-      if (newestNoteId) {
-        const url = request.nextUrl.clone();
-        url.searchParams.set("noteId", newestNoteId);
-        return NextResponse.redirect(url);
-      } else {
-        const { noteId } = await fetch(
+      // If no note found, create a new one
+      try {
+        const res = await fetch(
           `${process.env.NEXT_PUBLIC_BASE_URL}/api/create-new-note?userId=${user.id}`,
           {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          },
-        ).then((res) => res.json());
-        const url = request.nextUrl.clone();
-        url.searchParams.set("noteId", noteId);
-        return NextResponse.redirect(url);
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+        const json = await res.json();
+        const noteId = json?.noteId;
+
+        if (noteId && typeof noteId === "string") {
+          const url = request.nextUrl.clone();
+          url.searchParams.set("noteId", noteId);
+          return NextResponse.redirect(url);
+        } else {
+          console.error("noteId was invalid:", noteId);
+        }
+      } catch (err) {
+        console.error("Failed to create new note:", err);
       }
     }
+  } catch (err) {
+    console.error("Supabase user fetch failed:", err);
   }
 
   return supabaseResponse;
