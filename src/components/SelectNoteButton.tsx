@@ -40,23 +40,33 @@ function SelectNoteButton({ note }: Props) {
 
   const blankNoteText = "EMPTY NOTE";
   let noteText = localNoteText || blankNoteText;
-  if (shouldUseGlobalNoteText) {
-    noteText = selectedNoteText || blankNoteText;
+  if (shouldUseGlobalNoteText && selectedNoteText?.trim() && selectedNoteText.trim() !== '<p></p>') {
+    noteText = selectedNoteText;
   }
+  
 
   return (
     <SidebarMenuButton
       asChild
       className={`items-start gap-0 pr-12 ${note.id === noteId && "bg-sidebar-accent/50"}`}
     >
-      <Link href={`/?noteId=${note.id}`} className="flex h-fit flex-col">
-        <p className="w-full overflow-hidden truncate text-ellipsis whitespace-nowrap">
-          {noteText}
+    <Link href={`/?noteId=${note.id}`} className="flex h-fit flex-col">
+      {noteText && noteText.trim() !== '' && noteText.trim() !== '<p></p>' ? (
+        <div
+          className="w-full overflow-hidden truncate text-ellipsis whitespace-nowrap text-left"
+          dangerouslySetInnerHTML={{ __html: noteText }}
+        />
+      ) : (
+        <p className=" text-muted-foreground text-sm">
+          EMPTY NOTE
         </p>
-        <p className="text-muted-foreground text-xs">
-          {formattedDate}
-        </p>
-      </Link>
+      )}
+      <p className="text-muted-foreground text-xs">
+        {formattedDate}
+      </p>
+    </Link>
+
+
     </SidebarMenuButton>
   );
 }

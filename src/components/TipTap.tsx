@@ -76,7 +76,6 @@ export default function TipTap({ noteContent, onUpdate, className }: Props) {
         </Button>
       </div>
 
-      {/* Typable Editor Area */}
       <EditorContent
         editor={editor}
         className={
