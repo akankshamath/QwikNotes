@@ -37,13 +37,14 @@ function SelectNoteButton({ note }: Props) {
     setFormattedDate(note.updatedAt.toLocaleDateString());
   }, [note.updatedAt]);
 
+  const cleanedSelected = selectedNoteText?.replace(/<p><\/p>/g, "").trim();
 
-  const blankNoteText = "EMPTY NOTE";
-  let noteText = localNoteText || blankNoteText;
-  if (shouldUseGlobalNoteText && selectedNoteText?.trim() && selectedNoteText.trim() !== '<p></p>') {
+  let noteText = note.text || "";
+  if (shouldUseGlobalNoteText && cleanedSelected) {
     noteText = selectedNoteText;
   }
-  
+
+  const isNoteEmpty = !noteText || noteText.trim() === "" || noteText.trim() === "<p></p>";
 
   return (
     <SidebarMenuButton
