@@ -16,9 +16,18 @@ async function HomePage({ searchParams }: Props) {
     ? noteIdParam![0]
     : noteIdParam || "";
 
-  const note = await prisma.note.findFirst({
-    where: { id: noteId, authorId: user?.id },
-  });
+  // Only query the database if user is logged in and noteId exists
+  let note = null;
+  if (user && noteId) {
+    try {
+      note = await prisma.note.findFirst({
+        where: { id: noteId, authorId: user.id },
+      });
+    } catch (error) {
+      console.error("Error fetching note:", error);
+      // Continue rendering even if note fetch fails
+    }
+  }
 
   return (
     <div className="flex h-full flex-col items-center gap-4">
