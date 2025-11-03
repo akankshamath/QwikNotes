@@ -256,9 +256,16 @@ async function callMCPTool(
   };
 
   try {
-    const mcpServerPath =
-      process.env.MCP_SERVER_PATH ||
-      "/Users/akankshamathur/QwikNotes-1/mcp-server/dist/index.js";
+    const mcpServerPath = process.env.MCP_SERVER_PATH;
+
+    // If no MCP server path is configured (e.g., in production), return a stub response
+    if (!mcpServerPath) {
+      console.warn(`⚠️ MCP server not available for tool: ${toolName}`);
+      return {
+        error: "MCP server features are only available in local development",
+        message: "This feature requires the MCP server which is not available in this environment",
+      };
+    }
 
     console.log(`🔧 Calling MCP tool: ${toolName}`, args);
 
@@ -288,7 +295,7 @@ async function callMCPTool(
 
     return response;
   } catch (error) {
-    console.error("❌ MCP tool call call failed:", error);
+    console.error("❌ MCP tool call failed:", error);
     throw new Error(
       `MCP tool ${toolName} failed: ${error instanceof Error ? error.message : String(error)}`
     );
