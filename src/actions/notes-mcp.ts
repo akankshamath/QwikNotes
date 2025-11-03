@@ -151,7 +151,13 @@ const MCP_TOOLS = [
 /**
  * Call an MCP tool via stdio communication
  */
-async function callMCPTool(toolName: string, args: any, notes?: any[], userId?: string, currentNoteId?: string) {
+async function callMCPTool(
+  toolName: string,
+  args: Record<string, unknown>,
+  notes?: Array<{ id: string; text: string; createdAt: Date; updatedAt: Date }>,
+  userId?: string,
+  currentNoteId?: string
+) {
   // Special handling for create_note - actually create the note in the database
   if (toolName === "create_note") {
     if (!userId) {
@@ -161,7 +167,7 @@ async function callMCPTool(toolName: string, args: any, notes?: any[], userId?: 
     try {
       const newNote = await prisma.note.create({
         data: {
-          text: args.content,
+          text: String(args.content),
           authorId: userId,
         },
       });
@@ -187,8 +193,8 @@ async function callMCPTool(toolName: string, args: any, notes?: any[], userId?: 
     }
 
     try {
-      const noteId = args.noteId;
-      const mode = args.mode || "append";
+      const noteId = String(args.noteId);
+      const mode = String(args.mode || "append");
 
       // Fetch the current note
       const currentNote = await prisma.note.findFirst({
@@ -202,10 +208,10 @@ async function callMCPTool(toolName: string, args: any, notes?: any[], userId?: 
       // Prepare the new text based on mode
       let updatedText: string;
       if (mode === "replace") {
-        updatedText = args.newContent;
+        updatedText = String(args.newContent);
       } else {
         // Append mode - add new content to existing
-        updatedText = currentNote.text + "\n\n" + args.newContent;
+        updatedText = currentNote.text + "\n\n" + String(args.newContent);
       }
 
       // Update the note
