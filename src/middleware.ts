@@ -62,7 +62,7 @@ export async function updateSession(request: NextRequest) {
       // Try fetching newest note
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/api/fetch-newest-note?userId=${user.id}`
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/fetchNewestNote?userId=${user.id}`
         );
         const json = await res.json();
         const newestNoteId = json?.newestNoteId;
@@ -79,7 +79,7 @@ export async function updateSession(request: NextRequest) {
       // If no note found, create a new one
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/api/create-new-note?userId=${user.id}`,
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/createNewNote?userId=${user.id}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },

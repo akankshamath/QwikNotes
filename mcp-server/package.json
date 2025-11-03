@@ -1,0 +1,29 @@
+{
+  "name": "qwiknotes-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for QwikNotes AI chatbot",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js",
+    "watch": "tsx watch src/index.ts"
+  },
+  "keywords": ["mcp", "chatbot", "notes", "ai"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "axios": "^1.7.9",
+    "cheerio": "^1.0.0",
+    "dotenv": "^16.4.7",
+    "fuse.js": "^7.1.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.10",
+    "tsx": "^4.20.3",
+    "typescript": "^5.7.2"
+  }
+}

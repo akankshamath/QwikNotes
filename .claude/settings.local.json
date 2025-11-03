@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm prisma migrate reset --force)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -26,14 +26,18 @@ export async function createClient() {
 }
 
 export async function getUser() {
-  const { auth } = await createClient();
+  const supabase = await createClient();
 
-  const userObject = await auth.getUser();
+  try {
+    const { data, error } = await supabase.auth.getUser();
 
-  if (userObject.error) {
-    console.error(userObject.error);
+    if (error) {
+      return null;
+    }
+
+    return data.user;
+  } catch (error) {
+    // Handle AuthSessionMissingError and other errors gracefully
     return null;
   }
-
-  return userObject.data.user;
 }

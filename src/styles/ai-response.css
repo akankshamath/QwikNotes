@@ -1,69 +1,182 @@
+/* AI Response Styling - Clean, readable format */
+.bot-response {
+  line-height: 1.7;
+  color: hsl(var(--foreground));
+}
+
 .bot-response h1 {
-    font-size: 1.8rem;
-    font-weight: bold;
-    margin: 0.5em 0;
-  }
-  
-  .bot-response h2 {
-    font-size: 1.6rem;
-    font-weight: bold;
-    margin: 0.5em 0;
-  }
-  
-  .bot-response h3 {
-    font-size: 1.4rem;
-    font-weight: bold;
-    margin: 0.5em 0;
-  }
-  
-  .bot-response h4 {
-    font-size: 1.2rem;
-    font-weight: bold;
-    margin: 0.5em 0;
-  }
-  
-  .bot-response h5 {
-    font-size: 1rem;
-    font-weight: bold;
-    margin: 0.5em 0;
-  }
-  
-  .bot-response h6 {
-    font-size: 0.9rem;
-    font-weight: bold;
-    margin: 0.5em 0;
-  }
-  
-  .bot-response p {
-    margin: 0.5em 0;
-  }
-  
-  .bot-response ul {
-    list-style-type: disc;
-    margin: 0.5em 0 0.5em 1.5em;
-    padding-left: 1.5em;
-  }
-  
-  .bot-response ol {
-    list-style-type: decimal;
-    margin: 0.5em 0 0.5em 1.5em;
-    padding-left: 1.5em;
-  }
-  
-  .bot-response li {
-    margin-bottom: 0.25em;
-  }
-  
-  .bot-response b,
-  .bot-response strong {
-    font-weight: bold;
-  }
-  
-  .bot-response i,
-  .bot-response em {
-    font-style: italic;
-  }
-  
-  .bot-response u {
-    text-decoration: underline;
-  }
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 1.5em;
+  margin-bottom: 0.75em;
+  color: hsl(var(--foreground));
+  border-bottom: 2px solid hsl(var(--border));
+  padding-bottom: 0.3em;
+}
+
+.bot-response h2 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-top: 1.25em;
+  margin-bottom: 0.65em;
+  color: hsl(var(--foreground));
+}
+
+.bot-response h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  color: hsl(var(--muted-foreground));
+}
+
+.bot-response h4 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-top: 0.85em;
+  margin-bottom: 0.4em;
+}
+
+.bot-response h5,
+.bot-response h6 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 0.75em;
+  margin-bottom: 0.35em;
+}
+
+.bot-response p {
+  margin: 0.85em 0;
+  line-height: 1.7;
+}
+
+.bot-response p:first-child {
+  margin-top: 0;
+}
+
+.bot-response p:last-child {
+  margin-bottom: 0;
+}
+
+.bot-response ul,
+.bot-response ol {
+  margin: 1em 0;
+  padding-left: 2em;
+  line-height: 1.7;
+}
+
+.bot-response ul {
+  list-style-type: disc;
+}
+
+.bot-response ol {
+  list-style-type: decimal;
+}
+
+.bot-response li {
+  margin-bottom: 0.5em;
+  padding-left: 0.3em;
+}
+
+.bot-response li:last-child {
+  margin-bottom: 0;
+}
+
+.bot-response li > ul,
+.bot-response li > ol {
+  margin-top: 0.5em;
+  margin-bottom: 0;
+}
+
+.bot-response b,
+.bot-response strong {
+  font-weight: 700;
+  color: hsl(var(--foreground));
+}
+
+.bot-response i,
+.bot-response em {
+  font-style: italic;
+}
+
+.bot-response u {
+  text-decoration: underline;
+}
+
+.bot-response code {
+  background: hsl(var(--muted));
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 0.9em;
+}
+
+.bot-response pre {
+  background: hsl(var(--muted));
+  padding: 1em;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 1em 0;
+}
+
+.bot-response pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.bot-response blockquote {
+  border-left: 4px solid hsl(var(--border));
+  padding-left: 1em;
+  margin: 1em 0;
+  color: hsl(var(--muted-foreground));
+  font-style: italic;
+}
+
+.bot-response hr {
+  border: none;
+  border-top: 1px solid hsl(var(--border));
+  margin: 1.5em 0;
+}
+
+.bot-response a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+
+.bot-response a:hover {
+  text-decoration-style: solid;
+}
+
+/* Tables */
+.bot-response table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+}
+
+.bot-response th,
+.bot-response td {
+  border: 1px solid hsl(var(--border));
+  padding: 0.5em 0.75em;
+  text-align: left;
+}
+
+.bot-response th {
+  background: hsl(var(--muted));
+  font-weight: 600;
+}
+
+/* Section dividers */
+.bot-response section {
+  margin: 1.5em 0;
+}
+
+/* Improved spacing for nested lists */
+.bot-response ul ul,
+.bot-response ol ol,
+.bot-response ul ol,
+.bot-response ol ul {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}

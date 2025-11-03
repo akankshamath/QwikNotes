@@ -8,6 +8,7 @@ import {v4 as uuidv4} from "uuid";
 import { createNoteAction } from "@/actions/notes";
 import { toast } from "sonner"
 import { useState } from "react";
+import useNote from "@/hooks/useNote";
 
 type Props = {
     user: User | null;
@@ -16,6 +17,7 @@ type Props = {
 function NewNoteButton({user}: Props ) {
     const router = useRouter()
     const [loading, setLoading] = useState(false)
+    const { setNoteText } = useNote()
 
     const handleClickNewNoteButton = async() => {
         if (!user) {
@@ -25,6 +27,10 @@ function NewNoteButton({user}: Props ) {
 
             const uuid = uuidv4();
             await createNoteAction(uuid);
+
+            // Clear the note text context for the new empty note
+            setNoteText("");
+
             router.refresh();
             router.push(`/?noteId=${uuid}`);
 

@@ -1,5 +1,6 @@
 "use client";
 import {User} from "@supabase/supabase-js";
+import { Note } from "@prisma/client";
 import {
     Dialog,
     DialogContent,
@@ -11,18 +12,19 @@ import {
   import { Fragment, useRef, useState, useTransition} from "react";
   import {useRouter} from "next/navigation";
   import { Textarea } from "./ui/textarea";
-  import { askAIAboutNotesAction } from "@/actions/notes";
+  import { askAIAboutNotesAction } from "@/actions/notes-mcp";
   import "@/styles/ai-response.css";
   import { Button } from "@/components/ui/button";
-  import { ArrowUpIcon } from "lucide-react"; 
+  import { ArrowUpIcon } from "lucide-react";
 
-  
+
 
 type Props = {
     user: User | null;
+    currentNote: Note | null;
 }
 
-function AskAIButton({user}: Props) {
+function AskAIButton({user, currentNote}: Props) {
 
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
@@ -63,16 +65,34 @@ function AskAIButton({user}: Props) {
 
       const handleSubmit = () => {
         if (!questionText.trim()) return;
-    
+
         const newQuestions = [...questions, questionText];
         setQuestions(newQuestions);
         setQuestionText("");
         setTimeout(scrollToBottom, 100);
-    
+
         startTransition(async () => {
-          const response = await askAIAboutNotesAction(newQuestions, responses);
-          setResponses((prev) => [...prev, response]);
-    
+          const result = await askAIAboutNotesAction(newQuestions, responses, currentNote?.id);
+
+          // Parse the response to check if a note was created or updated
+          try {
+            const parsed = JSON.parse(result);
+            setResponses((prev) => [...prev, parsed.response]);
+
+            // If a note was created, refresh the page to update the sidebar
+            if (parsed.noteCreated) {
+              router.refresh();
+            }
+
+            // If a note was updated, refresh the page to update both sidebar and note content
+            if (parsed.noteUpdated) {
+              router.refresh();
+            }
+          } catch (error) {
+            // If parsing fails, treat it as a plain text response (backward compatibility)
+            setResponses((prev) => [...prev, result]);
+          }
+
           setTimeout(scrollToBottom, 100);
         });
     };
@@ -106,21 +126,38 @@ function AskAIButton({user}: Props) {
         </DialogDescription>
         </DialogHeader>
 
-        <div className="mt-4 flex flex-col gap-8">
+        <div className="mt-4 flex flex-col gap-6">
             {questions.map((question, index) => (
                 <Fragment key = {index}>
-                <p className="bg-muted text-muted-foreground ml-auto max-w-[60%] rounded-md px-2 py-1 text-sm">
-                {question}
-                </p>
+                <div className="ml-auto max-w-[75%]">
+                  <p className="bg-primary text-primary-foreground rounded-2xl rounded-tr-sm px-4 py-2.5 text-sm shadow-sm">
+                    {question}
+                  </p>
+                </div>
                 {responses[index] && (
-                <p
-                  className="bot-response text-muted-foreground text-sm"
-                  dangerouslySetInnerHTML={{ __html: responses[index] }}
-                />
+                <div className="mr-auto max-w-[85%]">
+                  <div
+                    className="bot-response bg-muted/50 rounded-2xl rounded-tl-sm px-4 py-3 text-sm shadow-sm"
+                    dangerouslySetInnerHTML={{ __html: responses[index] }}
+                  />
+                </div>
               )}
                 </Fragment>
             ))}
-            {isPending && <p className="animate-pulse text-sm">Thinking...</p>}
+            {isPending && (
+              <div className="mr-auto max-w-[85%]">
+                <div className="bg-muted/50 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="flex gap-1">
+                      <span className="animate-bounce inline-block h-2 w-2 rounded-full bg-foreground/40" style={{animationDelay: '0ms'}}></span>
+                      <span className="animate-bounce inline-block h-2 w-2 rounded-full bg-foreground/40" style={{animationDelay: '150ms'}}></span>
+                      <span className="animate-bounce inline-block h-2 w-2 rounded-full bg-foreground/40" style={{animationDelay: '300ms'}}></span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">Thinking...</span>
+                  </div>
+                </div>
+              </div>
+            )}
         </div>
         <div
           className="mt-auto flex cursor-text flex-col rounded-lg border p-4"
@@ -140,8 +177,12 @@ function AskAIButton({user}: Props) {
             value={questionText}
             onChange={(e) => setQuestionText(e.target.value)}
           />
-          <Button className="ml-auto size-8 rounded-full">
-            <ArrowUpIcon className="text-background" />
+          <Button
+            className="ml-auto size-8 rounded-full"
+            onClick={handleSubmit}
+            disabled={!questionText.trim() || isPending}
+          >
+            <ArrowUpIcon className="size-4" />
           </Button>
         </div>
     </DialogContent>

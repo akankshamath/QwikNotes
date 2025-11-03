@@ -33,6 +33,8 @@ export default function NoteTextInput({ noteId, startingNoteText }: Props) {
   const { noteText, setNoteText } = useNote()
   const noteIdParam = useSearchParams().get("noteId") || ""
   const debounceRef = useRef<NodeJS.Timeout | null>(null)
+  const revalidateRef = useRef<NodeJS.Timeout | null>(null)
+  const updateCountRef = useRef(0)
 
   const editor = useEditor({
     extensions: [
@@ -47,7 +49,7 @@ export default function NoteTextInput({ noteId, startingNoteText }: Props) {
     editorProps: {
       attributes: {
         class:
-          "custom-scrollbar h-[32rem] resize-none border-none p-4 placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0",
+          "custom-scrollbar h-[32rem] overflow-y-auto resize-none border-none p-4 placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0",
       },
 
     },
@@ -58,6 +60,19 @@ export default function NoteTextInput({ noteId, startingNoteText }: Props) {
       if (debounceRef.current) clearTimeout(debounceRef.current)
       debounceRef.current = setTimeout(() => {
         updateNoteAction(noteId, html)
+
+        // Track updates and revalidate periodically
+        updateCountRef.current += 1
+
+        // Clear existing revalidate timeout
+        if (revalidateRef.current) clearTimeout(revalidateRef.current)
+
+        // Schedule revalidation after 3 seconds of no typing
+        revalidateRef.current = setTimeout(() => {
+          // Trigger a revalidation update
+          updateNoteAction(noteId, html, true)
+          updateCountRef.current = 0
+        }, 3000)
       }, debounceTimeout)
     },
   })
@@ -67,6 +82,14 @@ export default function NoteTextInput({ noteId, startingNoteText }: Props) {
       editor.commands.setContent(startingNoteText)
     }
   }, [startingNoteText, noteIdParam, noteId, editor])
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      if (revalidateRef.current) clearTimeout(revalidateRef.current)
+    }
+  }, [])
 
   if (!editor) return null
 

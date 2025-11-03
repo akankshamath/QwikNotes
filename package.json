@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "pnpm dlx prisma generate && next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
-    "migrate": "pnpm dlx prisma generate && env $(cat .env.local | xargs) pnpm dlx prisma migrate dev"
+    "migrate": "prisma generate && env $(cat .env.local | xargs) prisma migrate dev"
   },
   "prisma": {
     "schema": "src/db/schema.prisma"
@@ -23,7 +23,7 @@
     "@radix-ui/react-tooltip": "^1.2.7",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/ssr": "^0.6.1",
-    "@supabase/supabase-js": "^2.49.4",
+    "@supabase/supabase-js": "^2.75.1",
     "@tiptap/extension-bullet-list": "^2.13.0",
     "@tiptap/extension-color": "^2.13.0",
     "@tiptap/extension-list-item": "^2.13.0",
@@ -37,7 +37,7 @@
     "fuse.js": "^7.1.0",
     "install": "^0.13.0",
     "lucide-react": "^0.507.0",
-    "next": "15.3.1",
+    "next": "^15.5.6",
     "next-themes": "^0.4.6",
     "openai": "^4.103.0",
     "react": "^19.0.0",
