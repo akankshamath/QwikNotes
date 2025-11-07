@@ -46,15 +46,24 @@ export const signUpAction = async (email: string, password: string) => {
     const userId = data.user?.id;
     if (!userId) throw new Error("Error signing up");
 
-    await prisma.user.create({
-      data: {
-        id: userId,
-        email,
-      },
+    // Check if user already exists in database
+    const existingUser = await prisma.user.findUnique({
+      where: { id: userId },
     });
+
+    // Only create user if they don't exist
+    if (!existingUser) {
+      await prisma.user.create({
+        data: {
+          id: userId,
+          email,
+        },
+      });
+    }
 
     return { errorMessage: null };
   } catch (error) {
+    console.error("Sign up error:", error);
     return handleError(error);
   }
 };
