@@ -4,6 +4,50 @@
 
 import { Client } from "@notionhq/client";
 
+// Type definitions for Notion API responses
+interface NotionRichText {
+  plain_text: string;
+  type: string;
+  text?: {
+    content: string;
+  };
+}
+
+interface NotionTitleProperty {
+  type: "title";
+  title: NotionRichText[];
+}
+
+interface NotionPage {
+  id: string;
+  url: string;
+  created_time: string;
+  last_edited_time: string;
+  properties: Record<string, NotionTitleProperty | unknown>;
+}
+
+interface NotionBlock {
+  id: string;
+  type: string;
+  [key: string]: unknown;
+  paragraph?: { rich_text: NotionRichText[] };
+  heading_1?: { rich_text: NotionRichText[] };
+  heading_2?: { rich_text: NotionRichText[] };
+  heading_3?: { rich_text: NotionRichText[] };
+  bulleted_list_item?: { rich_text: NotionRichText[] };
+  numbered_list_item?: { rich_text: NotionRichText[] };
+  to_do?: { rich_text: NotionRichText[]; checked: boolean };
+  code?: { rich_text: NotionRichText[] };
+}
+
+interface NotionDatabase {
+  id: string;
+  url: string;
+  created_time: string;
+  last_edited_time: string;
+  title: NotionRichText[];
+}
+
 // Initialize Notion client with user-specific token
 function getNotionClient(accessToken: string) {
   if (!accessToken) {
