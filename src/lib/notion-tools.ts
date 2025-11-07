@@ -71,24 +71,26 @@ export async function searchNotion(query: string, accessToken: string) {
       page_size: 10,
     });
 
-    const results = response.results.map((page: any) => {
+    const results = response.results.map((page) => {
+      const notionPage = page as NotionPage;
       // Extract title from different title property types
       let title = "Untitled";
-      if (page.properties) {
-        const titleProp = Object.values(page.properties).find(
-          (prop: any) => prop.type === "title"
-        ) as any;
+      if (notionPage.properties) {
+        const titleProp = Object.values(notionPage.properties).find(
+          (prop): prop is NotionTitleProperty =>
+            typeof prop === "object" && prop !== null && "type" in prop && prop.type === "title"
+        );
         if (titleProp?.title?.[0]?.plain_text) {
           title = titleProp.title[0].plain_text;
         }
       }
 
       return {
-        id: page.id,
+        id: notionPage.id,
         title,
-        url: page.url,
-        created_time: page.created_time,
-        last_edited_time: page.last_edited_time,
+        url: notionPage.url,
+        created_time: notionPage.created_time,
+        last_edited_time: notionPage.last_edited_time,
       };
     });
 
@@ -120,32 +122,33 @@ export async function getNotionPage(pageId: string, accessToken: string) {
 
     // Extract text from blocks
     const content = blocks.results
-      .map((block: any) => {
+      .map((block) => {
+        const notionBlock = block as NotionBlock;
         // Handle different block types
-        if (block.type === "paragraph" && block.paragraph?.rich_text) {
-          return block.paragraph.rich_text.map((text: any) => text.plain_text).join("");
+        if (notionBlock.type === "paragraph" && notionBlock.paragraph?.rich_text) {
+          return notionBlock.paragraph.rich_text.map((text) => text.plain_text).join("");
         }
-        if (block.type === "heading_1" && block.heading_1?.rich_text) {
-          return "# " + block.heading_1.rich_text.map((text: any) => text.plain_text).join("");
+        if (notionBlock.type === "heading_1" && notionBlock.heading_1?.rich_text) {
+          return "# " + notionBlock.heading_1.rich_text.map((text) => text.plain_text).join("");
         }
-        if (block.type === "heading_2" && block.heading_2?.rich_text) {
-          return "## " + block.heading_2.rich_text.map((text: any) => text.plain_text).join("");
+        if (notionBlock.type === "heading_2" && notionBlock.heading_2?.rich_text) {
+          return "## " + notionBlock.heading_2.rich_text.map((text) => text.plain_text).join("");
         }
-        if (block.type === "heading_3" && block.heading_3?.rich_text) {
-          return "### " + block.heading_3.rich_text.map((text: any) => text.plain_text).join("");
+        if (notionBlock.type === "heading_3" && notionBlock.heading_3?.rich_text) {
+          return "### " + notionBlock.heading_3.rich_text.map((text) => text.plain_text).join("");
         }
-        if (block.type === "bulleted_list_item" && block.bulleted_list_item?.rich_text) {
-          return "• " + block.bulleted_list_item.rich_text.map((text: any) => text.plain_text).join("");
+        if (notionBlock.type === "bulleted_list_item" && notionBlock.bulleted_list_item?.rich_text) {
+          return "• " + notionBlock.bulleted_list_item.rich_text.map((text) => text.plain_text).join("");
         }
-        if (block.type === "numbered_list_item" && block.numbered_list_item?.rich_text) {
-          return "- " + block.numbered_list_item.rich_text.map((text: any) => text.plain_text).join("");
+        if (notionBlock.type === "numbered_list_item" && notionBlock.numbered_list_item?.rich_text) {
+          return "- " + notionBlock.numbered_list_item.rich_text.map((text) => text.plain_text).join("");
         }
-        if (block.type === "to_do" && block.to_do?.rich_text) {
-          const checked = block.to_do.checked ? "[x]" : "[ ]";
-          return `${checked} ${block.to_do.rich_text.map((text: any) => text.plain_text).join("")}`;
+        if (notionBlock.type === "to_do" && notionBlock.to_do?.rich_text) {
+          const checked = notionBlock.to_do.checked ? "[x]" : "[ ]";
+          return `${checked} ${notionBlock.to_do.rich_text.map((text) => text.plain_text).join("")}`;
         }
-        if (block.type === "code" && block.code?.rich_text) {
-          return "```\n" + block.code.rich_text.map((text: any) => text.plain_text).join("") + "\n```";
+        if (notionBlock.type === "code" && notionBlock.code?.rich_text) {
+          return "```\n" + notionBlock.code.rich_text.map((text) => text.plain_text).join("") + "\n```";
         }
         return "";
       })
@@ -153,11 +156,13 @@ export async function getNotionPage(pageId: string, accessToken: string) {
       .join("\n\n");
 
     // Extract title
+    const notionPage = page as NotionPage;
     let title = "Untitled";
-    if ((page as any).properties) {
-      const titleProp = Object.values((page as any).properties).find(
-        (prop: any) => prop.type === "title"
-      ) as any;
+    if (notionPage.properties) {
+      const titleProp = Object.values(notionPage.properties).find(
+        (prop): prop is NotionTitleProperty =>
+          typeof prop === "object" && prop !== null && "type" in prop && prop.type === "title"
+      );
       if (titleProp?.title?.[0]?.plain_text) {
         title = titleProp.title[0].plain_text;
       }
@@ -166,10 +171,10 @@ export async function getNotionPage(pageId: string, accessToken: string) {
     return {
       id: pageId,
       title,
-      url: (page as any).url,
+      url: notionPage.url,
       content,
-      created_time: (page as any).created_time,
-      last_edited_time: (page as any).last_edited_time,
+      created_time: notionPage.created_time,
+      last_edited_time: notionPage.last_edited_time,
     };
   } catch (error) {
     throw new Error(
@@ -316,23 +321,24 @@ export async function listNotionDatabases(accessToken: string) {
     const response = await notion.search({
       filter: {
         property: "object",
-        value: "database" as any, // Notion SDK type issue - database is valid but not in types
+        value: "database" as "page", // Notion SDK type issue - database is valid but not in types
       },
       page_size: 20,
     });
 
-    const databases = response.results.map((db: any) => {
+    const databases = response.results.map((db) => {
+      const notionDb = db as NotionDatabase;
       let title = "Untitled Database";
-      if (db.title?.[0]?.plain_text) {
-        title = db.title[0].plain_text;
+      if (notionDb.title?.[0]?.plain_text) {
+        title = notionDb.title[0].plain_text;
       }
 
       return {
-        id: db.id,
+        id: notionDb.id,
         title,
-        url: db.url,
-        created_time: db.created_time,
-        last_edited_time: db.last_edited_time,
+        url: notionDb.url,
+        created_time: notionDb.created_time,
+        last_edited_time: notionDb.last_edited_time,
       };
     });
 

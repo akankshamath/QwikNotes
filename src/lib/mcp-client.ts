@@ -32,10 +32,18 @@ class MCPClient {
 
       // Create transport with command and args
       // The SDK will handle spawning the process
+      // Filter out undefined values from process.env
+      const env = Object.entries(process.env).reduce<Record<string, string>>((acc, [key, value]) => {
+        if (value !== undefined) {
+          acc[key] = value;
+        }
+        return acc;
+      }, {});
+
       this.transport = new StdioClientTransport({
         command: "node",
         args: [mcpServerPath],
-        env: process.env,
+        env,
       });
 
       // Create client
@@ -127,20 +135,20 @@ export async function getMCPClient(): Promise<MCPClient> {
 export async function callMCPToolViaStdio(
   name: string,
   args: Record<string, unknown>
-): Promise<any> {
+): Promise<Record<string, unknown>> {
   const client = await getMCPClient();
   const result = await client.callTool(name, args);
 
   // Parse the result
   if (result.content && result.content[0]) {
     try {
-      return JSON.parse(result.content[0].text);
+      return JSON.parse(result.content[0].text) as Record<string, unknown>;
     } catch {
       return { result: result.content[0].text };
     }
   }
 
-  return result;
+  return result as unknown as Record<string, unknown>;
 }
 
 /**
