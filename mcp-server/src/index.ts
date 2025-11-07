@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -523,7 +521,6 @@ class QwikNotesServer {
   private async handleSummarizeText(args: unknown) {
     const { text, maxLength } = SummarizeTextSchema.parse(args);
 
-    // Simple extractive summarization (take first N sentences)
     const cleanText = text.replace(/<[^>]*>/g, "");
     const sentences = cleanText.match(/[^.!?]+[.!?]+/g) || [cleanText];
 
@@ -554,7 +551,6 @@ class QwikNotesServer {
   private async handleExtractEntities(args: unknown) {
     const { text, entityTypes } = ExtractEntitiesSchema.parse(args);
 
-    // Simple regex-based entity extraction
     const cleanText = text.replace(/<[^>]*>/g, "");
 
     const entities: Record<string, string[]> = {
@@ -572,7 +568,7 @@ class QwikNotesServer {
     const urlRegex = /https?:\/\/[^\s]+/g;
     entities.urls = [...new Set(cleanText.match(urlRegex) || [])];
 
-    // Dates (simple patterns)
+    // Dates
     const dateRegex = /\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b|\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]* \d{1,2},? \d{4}\b/gi;
     entities.dates = [...new Set(cleanText.match(dateRegex) || [])];
 

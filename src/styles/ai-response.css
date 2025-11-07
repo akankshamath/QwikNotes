@@ -1,7 +1,14 @@
 /* AI Response Styling - Clean, readable format */
 .bot-response {
+  font-size: 0.9375rem; /* 15px */
   line-height: 1.7;
   color: hsl(var(--foreground));
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.bot-response * {
+  max-width: 100%;
 }
 
 .bot-response h1 {
@@ -23,11 +30,17 @@
 }
 
 .bot-response h3 {
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 600;
-  margin-top: 1em;
-  margin-bottom: 0.5em;
-  color: hsl(var(--muted-foreground));
+  margin-top: 0.25em;
+  margin-bottom: 0.85em;
+  color: hsl(var(--foreground));
+  border-bottom: 1px solid hsl(var(--border));
+  padding-bottom: 0.4em;
+}
+
+.bot-response h3:first-child {
+  margin-top: 0;
 }
 
 .bot-response h4 {
@@ -46,8 +59,13 @@
 }
 
 .bot-response p {
-  margin: 0.85em 0;
+  margin: 0.8em 0;
   line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.bot-response p + p {
+  margin-top: 0.9em;
 }
 
 .bot-response p:first-child {
@@ -60,9 +78,25 @@
 
 .bot-response ul,
 .bot-response ol {
-  margin: 1em 0;
-  padding-left: 2em;
-  line-height: 1.7;
+  margin: 1.1em 0;
+  padding-left: 1.5em;
+  line-height: 1.6;
+  display: block;
+}
+
+.bot-response p + ul,
+.bot-response p + ol {
+  margin-top: 0.6em;
+}
+
+.bot-response ul + p,
+.bot-response ol + p {
+  margin-top: 1em;
+}
+
+.bot-response h3 + ul,
+.bot-response h3 + ol {
+  margin-top: 0.6em;
 }
 
 .bot-response ul {
@@ -74,8 +108,14 @@
 }
 
 .bot-response li {
-  margin-bottom: 0.5em;
-  padding-left: 0.3em;
+  margin-bottom: 0.65em;
+  padding-left: 0.35em;
+  display: list-item;
+}
+
+.bot-response li::marker {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.85em;
 }
 
 .bot-response li:last-child {
@@ -90,8 +130,12 @@
 
 .bot-response b,
 .bot-response strong {
-  font-weight: 700;
+  font-weight: 600;
   color: hsl(var(--foreground));
+}
+
+.bot-response li strong {
+  font-weight: 600;
 }
 
 .bot-response i,
@@ -105,10 +149,12 @@
 
 .bot-response code {
   background: hsl(var(--muted));
-  padding: 0.2em 0.4em;
-  border-radius: 3px;
-  font-family: monospace;
-  font-size: 0.9em;
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.875em;
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
 }
 
 .bot-response pre {

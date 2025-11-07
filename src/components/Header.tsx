@@ -6,6 +6,7 @@ import DarkModeToggle from './DarkModeToggle';
 import LogOutButton from './LogOutButton';
 import { getUser } from '@/auth/server';
 import { SidebarTrigger } from "./ui/sidebar";
+import { NotionConnectionButton } from './NotionConnectionButton';
 
 async function Header() {
     const user = await getUser();
@@ -34,7 +35,10 @@ async function Header() {
 
         <div className="flex gap-4">
             {user ? (
-                <LogOutButton />
+                <>
+                    <NotionConnectionButton />
+                    <LogOutButton />
+                </>
             ) : (
                 <>
                 <Button asChild>

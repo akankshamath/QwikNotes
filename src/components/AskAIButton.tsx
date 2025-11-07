@@ -9,13 +9,15 @@ import {
     DialogTitle,
     DialogTrigger,
   } from "@/components/ui/dialog"
-  import { Fragment, useRef, useState, useTransition} from "react";
+  import { Fragment, useEffect, useRef, useState, useTransition} from "react";
   import {useRouter} from "next/navigation";
   import { Textarea } from "./ui/textarea";
   import { askAIAboutNotesAction } from "@/actions/notes-mcp";
+  import { loadChatHistoryAction, saveChatMessageAction, clearChatHistoryAction } from "@/actions/chat";
   import "@/styles/ai-response.css";
   import { Button } from "@/components/ui/button";
-  import { ArrowUpIcon } from "lucide-react";
+  import { ArrowUpIcon, Trash2 } from "lucide-react";
+  import { toast } from "sonner";
 
 
 
@@ -28,6 +30,7 @@ function AskAIButton({user, currentNote}: Props) {
 
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
+    const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
 
     const [open, setOpen] = useState(false);
@@ -35,17 +38,49 @@ function AskAIButton({user, currentNote}: Props) {
     const [questions, setQuestions] = useState<string[]>([]);
     const [responses, setResponses] = useState<string[]>([]);
 
+    // Load chat history when dialog opens
+    useEffect(() => {
+      if (open && currentNote?.id) {
+        setIsLoadingHistory(true);
+        loadChatHistoryAction(currentNote.id).then((result) => {
+          if ('chatMessages' in result && result.errorMessage === null) {
+            const loadedQuestions = result.chatMessages.map((msg: { id: string; createdAt: Date; question: string; response: string }) => msg.question);
+            const loadedResponses = result.chatMessages.map((msg: { id: string; createdAt: Date; question: string; response: string }) => msg.response);
+            setQuestions(loadedQuestions);
+            setResponses(loadedResponses);
+          }
+          setIsLoadingHistory(false);
+        });
+      }
+    }, [open, currentNote?.id]);
+
     const handleOnOpenChange = (isOpen: boolean) => {
         if (!user) {
             router.push("/login");
         } else {
-            if (isOpen){
+            if (!isOpen){
+                // When closing, keep the history (don't reset)
+            } else {
+                // When opening, history will be loaded by useEffect
                 setQuestionText("");
-                setQuestions([]);
-                setResponses([]);
             }
             setOpen(isOpen);
         }
+    };
+
+    const handleClearHistory = () => {
+      if (!currentNote?.id) return;
+
+      startTransition(async () => {
+        const result = await clearChatHistoryAction(currentNote.id);
+        if (!result.errorMessage) {
+          setQuestions([]);
+          setResponses([]);
+          toast.success("Chat history cleared");
+        } else {
+          toast.error("Failed to clear history");
+        }
+      });
     };
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -66,7 +101,8 @@ function AskAIButton({user, currentNote}: Props) {
       const handleSubmit = () => {
         if (!questionText.trim()) return;
 
-        const newQuestions = [...questions, questionText];
+        const currentQuestion = questionText;
+        const newQuestions = [...questions, currentQuestion];
         setQuestions(newQuestions);
         setQuestionText("");
         setTimeout(scrollToBottom, 100);
@@ -77,7 +113,13 @@ function AskAIButton({user, currentNote}: Props) {
           // Parse the response to check if a note was created or updated
           try {
             const parsed = JSON.parse(result);
-            setResponses((prev) => [...prev, parsed.response]);
+            const aiResponse = parsed.response;
+            setResponses((prev) => [...prev, aiResponse]);
+
+            // Save the chat message to the database if we have a current note
+            if (currentNote?.id) {
+              await saveChatMessageAction(currentNote.id, currentQuestion, aiResponse);
+            }
 
             // If a note was created, refresh the page to update the sidebar
             if (parsed.noteCreated) {
@@ -90,7 +132,13 @@ function AskAIButton({user, currentNote}: Props) {
             }
           } catch (error) {
             // If parsing fails, treat it as a plain text response (backward compatibility)
-            setResponses((prev) => [...prev, result]);
+            const aiResponse = result;
+            setResponses((prev) => [...prev, aiResponse]);
+
+            // Save the chat message for backward compatibility
+            if (currentNote?.id) {
+              await saveChatMessageAction(currentNote.id, currentQuestion, aiResponse);
+            }
           }
 
           setTimeout(scrollToBottom, 100);
@@ -120,10 +168,25 @@ function AskAIButton({user, currentNote}: Props) {
     </DialogTrigger>
     <DialogContent className = "custom-scrollbar flex h-[85vh] max-w-4xl flex-col overflow-y-auto" ref= {contentRef}>
         <DialogHeader>
-        <DialogTitle>Ask AI about your notes!</DialogTitle>
-        <DialogDescription>
-            Ask questions about your notes to our AI
-        </DialogDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <DialogTitle>Ask AI about your notes!</DialogTitle>
+            <DialogDescription>
+                Ask questions about your notes to our AI
+            </DialogDescription>
+          </div>
+          {questions.length > 0 && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleClearHistory}
+              disabled={isPending}
+              title="Clear chat history"
+            >
+              <Trash2 className="size-4" />
+            </Button>
+          )}
+        </div>
         </DialogHeader>
 
         <div className="mt-4 flex flex-col gap-6">
@@ -137,7 +200,7 @@ function AskAIButton({user, currentNote}: Props) {
                 {responses[index] && (
                 <div className="mr-auto max-w-[85%]">
                   <div
-                    className="bot-response bg-muted/50 rounded-2xl rounded-tl-sm px-4 py-3 text-sm shadow-sm"
+                    className="bot-response bg-muted/50 rounded-2xl rounded-tl-sm px-5 py-4 shadow-sm"
                     dangerouslySetInnerHTML={{ __html: responses[index] }}
                   />
                 </div>

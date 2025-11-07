@@ -8,18 +8,35 @@ datasource db {
 }
 
 model Note {
+  id           String        @id @default(uuid())
+  text         String
+  authorId     String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @default(now()) @updatedAt
+  author       User          @relation(fields: [authorId], references: [id])
+  chatMessages ChatMessage[]
+}
+
+model ChatMessage {
   id        String   @id @default(uuid())
-  text      String
-  authorId  String
+  noteId    String
+  question  String
+  response  String
   createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-  author    User     @relation(fields: [authorId], references: [id])
+  note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-  notes     Note[]
+  id                   String    @id @default(uuid())
+  email                String    @unique
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @default(now()) @updatedAt
+  notes                Note[]
+
+  // Notion OAuth Integration
+  notionAccessToken    String?   // OAuth access token (encrypted in production)
+  notionWorkspaceId    String?   // Notion workspace ID
+  notionWorkspaceName  String?   // Workspace name for display
+  notionBotId          String?   // Bot user ID
+  notionConnectedAt    DateTime? // When user connected Notion
 }
